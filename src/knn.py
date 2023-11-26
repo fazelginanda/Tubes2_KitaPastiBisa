@@ -58,6 +58,8 @@ def euclidean_distance(row1, row2):
 
 def get_neighbors(train_data, test_feature_row, num_of_neighbors):
     distances = []
+    # normalized_train_data = normalize_data(train_data)
+    # normalized_test_feature_data = normalize_data(test_feature_row)
     for train_row in train_data:
         train_feature_row = train_row[:-1]
         distance = euclidean_distance(train_feature_row, test_feature_row)
@@ -84,8 +86,15 @@ def evaluate_model(train_data, test_feature_data, actual_labels):
     for instance in test_feature_data:
         predictions.append(predict(train_data, instance, 9))
 
+    int_actual_labels = []
+    for label in actual_labels:
+        int_actual_labels.append(int(label))
+    # print(predictions)
+    # print()
+    # print(int_actual_labels)
+
     accuracy = sum(pred == actual for pred, actual in zip(
-        predictions, actual_labels)) / len(predictions)
+        predictions, int_actual_labels)) / len(predictions)
     print("Accuracy:", accuracy)
 
 
