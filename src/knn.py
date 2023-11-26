@@ -89,9 +89,12 @@ def evaluate_model(train_data, test_feature_data, actual_labels):
     int_actual_labels = []
     for label in actual_labels:
         int_actual_labels.append(int(label))
+
     # print(predictions)
     # print()
     # print(int_actual_labels)
+    # print(len(predictions))
+    # print(len(actual_labels))
 
     accuracy = sum(pred == actual for pred, actual in zip(
         predictions, int_actual_labels)) / len(predictions)
@@ -101,16 +104,17 @@ def evaluate_model(train_data, test_feature_data, actual_labels):
 train_file_path = './data/data_train.csv'
 test_file_path = './data/data_validation.csv'
 
-# train_data = load_data_model(train_file_path)
-train_features, train_labels, _ = load_data(test_file_path)
+train_features, train_labels, _ = load_data(train_file_path)
 test_features, actual_labels, _ = load_data(test_file_path)
 
-train_data = []
-for i in range(len(train_features)):
-    train_data.append(train_features[i])
-    train_data[i].append(train_labels[i])
+normalized_train_data = []
+normalized_train_features = normalize_data(train_features)
+for i in range(len(normalized_train_features)):
+    normalized_train_data.append(normalized_train_features[i])
+    normalized_train_data[i].append(train_labels[i])
 
-evaluate_model(train_data, test_features, actual_labels)
+normalized_test_features = normalize_data(test_features)
+evaluate_model(normalized_train_data, normalized_test_features, actual_labels)
 
 
 ##### TESTING #####
