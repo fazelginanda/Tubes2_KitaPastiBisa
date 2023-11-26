@@ -56,11 +56,10 @@ def euclidean_distance(row1, row2):
     return math.sqrt(sum_of_squared_diff)
 
 
-def get_neighbors(train_data, test_row, num_of_neighbors):
+def get_neighbors(train_data, test_feature_row, num_of_neighbors):
     distances = []
     for train_row in train_data:
         train_feature_row = train_row[:-1]
-        test_feature_row = test_row[:-1]
         distance = euclidean_distance(train_feature_row, test_feature_row)
         distances.append((train_feature_row, distance))
         distances.sort(key=lambda x: x[1])
@@ -70,8 +69,8 @@ def get_neighbors(train_data, test_row, num_of_neighbors):
     return neighbors
 
 
-def predict(train_data, test_row, num_of_neighbors):
-    neighbors = get_neighbors(train_data, test_row, num_of_neighbors)
+def predict(train_data, test_feature_row, num_of_neighbors):
+    neighbors = get_neighbors(train_data, test_feature_row, num_of_neighbors)
     list_of_predicted_labels = []
     for neighbor in neighbors:
         list_of_predicted_labels.append(neighbor[-1])
@@ -80,22 +79,14 @@ def predict(train_data, test_row, num_of_neighbors):
     return prediction
 
 
-def evaluate_model(train_data, test_data, actual_labels):
+def evaluate_model(train_data, test_feature_data, actual_labels):
     predictions = []
-    for instance in test_data:
+    for instance in test_feature_data:
         predictions.append(predict(train_data, instance, 9))
 
     accuracy = sum(pred == actual for pred, actual in zip(
         predictions, actual_labels)) / len(predictions)
     print("Accuracy:", accuracy)
-
-
-# def print_matrix(matrix):
-#     for row in matrix:
-#         print(row)
-
-# def get_num_of_instance(data):
-#     return len(data)
 
 
 train_file_path = './data/data_train.csv'
@@ -110,7 +101,16 @@ for i in range(len(train_features)):
     train_data.append(train_features[i])
     train_data[i].append(train_labels[i])
 
+evaluate_model(train_data, test_features, actual_labels)
+
+
+##### TESTING #####
 # for row in train_data:
 #     print(row)
 
-evaluate_model(train_data, test_features, actual_labels)
+# def print_matrix(matrix):
+#     for row in matrix:
+#         print(row)
+
+# def get_num_of_instance(data):
+#     return len(data)
