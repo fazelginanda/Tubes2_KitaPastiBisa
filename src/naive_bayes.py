@@ -67,7 +67,7 @@ def summarize_data(data):
 # gaussian probability for numerical features
 def calculate_numerical_probability(x, mean, stdev):
     exponent = math.exp(-(math.pow(x - mean, 2) / (2 * math.pow(stdev, 2))))
-    return (1 / (math.sqrt(2 * math.pi) * stdev)) * exponent
+    return (exponent / (math.sqrt(2 * math.pi) * stdev))
 
 # bernoulli for categorical features
 def calculate_categorical_probability(x, prob):
