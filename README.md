@@ -14,7 +14,7 @@ Model kemudian digunakan untuk mengetes prediksi untuk data uji (data_validation
 4. Jalankan algoritma Naive Bayes hasil implementasi pustaka scikit-learn: `python naive_bayes_sklearn.py`
 
 ## Identitas Kelompok
-### Nama Kelompok : jarkomWang
+### Nama Kelompok : KitaPastiBisa
 | NIM  | Nama |
 | ------------- | ------------- |
 | 13521098 | Fazel Ginanda |
