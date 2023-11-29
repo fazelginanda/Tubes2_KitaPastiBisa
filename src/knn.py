@@ -1,110 +1,60 @@
-import csv
-import math
 import numpy as np
 import pickle
 
+class KNNClassifier:
+    def __init__(self, k=3):
+        self.k = k
 
-def load_data(file_path):
-    features = []
-    labels = []
-    with open(file_path, 'r') as csv_file:
-        csv_reader = csv.reader(csv_file)
-        header = next(csv_reader)
-        for row in csv_reader:
-            features.append([float(val) if '.' in val else int(val)
-                            for val in row[:-1]])
-            labels.append(row[-1])
-    return features, labels, header[:-1]
+    def fit(self, X_train, y_train):
+        self.X_train = X_train
+        self.y_train = y_train
 
+    def predict(self, X_test):
+        predictions = [self._predict(x) for x in X_test]
+        return np.array(predictions)
 
-def load_data_model(file_path):
-    data = []
-    with open(file_path, 'r') as csv_file:
-        csv_reader = csv.reader(csv_file)
-        for row in csv_reader:
-            data.append([float(val) if '.' in val else int(val)
-                         for val in row])
-    return data
+    def _predict(self, x):
+        distances = [np.linalg.norm(x - x_train) for x_train in self.X_train]
+        k_neighbors_indices = np.argsort(distances)[:self.k]
+        k_neighbor_labels = [self.y_train[i] for i in k_neighbors_indices]
+        most_common = np.bincount(k_neighbor_labels).argmax()
+        return most_common
 
+def load_data_from_csv(file_path):
+    data = np.genfromtxt(file_path, delimiter=',', skip_header=1)
+    X_train = data[:, :-1]  # kolom-kolom fitur
+    y_train = data[:, -1]   # kolom target
+    return X_train, y_train
 
-def get_min_of_column(data, index):
-    column_values = []
-    for row in data:
-        column_values.append(row[index])
-    return min(column_values)
+def calculate_accuracy(y_true, y_pred):
+    correct_predictions = np.sum(y_true == y_pred)
+    total_samples = len(y_true)
+    accuracy = correct_predictions / total_samples
+    return accuracy
 
+# loading data train
+training_file_path = '../data/data_train.csv'
+X_train, y_train = load_data_from_csv(training_file_path)
 
-def get_max_of_column(data, index):
-    column_values = []
-    for row in data:
-        column_values.append(row[index])
-    return max(column_values)
+# loading data test
+test_file_path = '../data/data_validation.csv'
+data_test = np.genfromtxt(test_file_path, delimiter=',', skip_header=1)
+X_test = data_test[:, :-1]
+Y_test = data_test[:, -1]
 
+# create and fit the k-NN classifier
+knn_classifier = KNNClassifier(k=21)
+knn_classifier.fit(X_train, y_train)
+with open('../models/knn_model.pkl', 'wb') as model_file:
+        pickle.dump((knn_classifier), model_file)
 
-def normalize_data(data):
-    for row in data:
-        for i in range(len(row)):
-            row[i] = (row[i] - get_min_of_column(data, i)) / \
-                (get_max_of_column(data, i) - get_min_of_column(data, i))
-    return data
+# making predictions by using pred() function:
+with open('../models/knn_model.pkl', 'rb') as model_file:
+        loaded_model = pickle.load(model_file)
 
+# make predictions
+predictions = loaded_model.predict(X_test)
+accuracy = calculate_accuracy(Y_test, predictions)
 
-def euclidean_distance(row1, row2):
-    sum_of_squared_diff = 0
-    for i in range(len(row1)):
-        sum_of_squared_diff += (row2[i]-row1[i]) ** 2
-    return math.sqrt(sum_of_squared_diff)
-
-
-def get_neighbors(train_data, test_feature_row, num_of_neighbors):
-    distances = []
-    for train_row in train_data:
-        train_feature_row = train_row[:-1]
-        distance = euclidean_distance(train_feature_row, test_feature_row)
-        distances.append((train_feature_row, distance))
-        distances.sort(key=lambda x: x[1])
-    neighbors = []
-    for i in range(num_of_neighbors):
-        neighbors.append(distances[i][0])
-    return neighbors
-
-
-def predict(train_data, test_feature_row, num_of_neighbors):
-    neighbors = get_neighbors(train_data, test_feature_row, num_of_neighbors)
-    list_of_predicted_labels = []
-    for neighbor in neighbors:
-        list_of_predicted_labels.append(neighbor[-1])
-    prediction = max(set(list_of_predicted_labels),
-                     key=list_of_predicted_labels.count)
-    return prediction
-
-
-def evaluate_model(train_data, test_feature_data, actual_labels):
-    predictions = []
-    for instance in test_feature_data:
-        predictions.append(predict(train_data, instance, 100))
-
-    int_actual_labels = []
-    for label in actual_labels:
-        int_actual_labels.append(int(label))
-
-    accuracy = sum(pred == actual for pred, actual in zip(
-        predictions, int_actual_labels)) / len(predictions)
-    print("Accuracy:", accuracy)
-
-
-train_file_path = './data/data_train.csv'
-test_file_path = './data/data_validation.csv'
-
-train_features, train_labels, _ = load_data(train_file_path)
-test_features, actual_labels, _ = load_data(test_file_path)
-
-normalized_train_data = []
-normalized_train_features = normalize_data(train_features)
-for i in range(len(normalized_train_features)):
-    normalized_train_data.append(normalized_train_features[i])
-    normalized_train_data[i].append(train_labels[i])
-
-normalized_test_features = normalize_data(test_features)
-
-evaluate_model(normalized_train_data, normalized_test_features, actual_labels)
+print("Predictions:", predictions)
+print(f"Accuracy: {accuracy*100}%")
