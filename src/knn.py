@@ -58,8 +58,6 @@ def euclidean_distance(row1, row2):
 
 def get_neighbors(train_data, test_feature_row, num_of_neighbors):
     distances = []
-    # normalized_train_data = normalize_data(train_data)
-    # normalized_test_feature_data = normalize_data(test_feature_row)
     for train_row in train_data:
         train_feature_row = train_row[:-1]
         distance = euclidean_distance(train_feature_row, test_feature_row)
@@ -84,17 +82,11 @@ def predict(train_data, test_feature_row, num_of_neighbors):
 def evaluate_model(train_data, test_feature_data, actual_labels):
     predictions = []
     for instance in test_feature_data:
-        predictions.append(predict(train_data, instance, 9))
+        predictions.append(predict(train_data, instance, 100))
 
     int_actual_labels = []
     for label in actual_labels:
         int_actual_labels.append(int(label))
-
-    # print(predictions)
-    # print()
-    # print(int_actual_labels)
-    # print(len(predictions))
-    # print(len(actual_labels))
 
     accuracy = sum(pred == actual for pred, actual in zip(
         predictions, int_actual_labels)) / len(predictions)
@@ -114,16 +106,5 @@ for i in range(len(normalized_train_features)):
     normalized_train_data[i].append(train_labels[i])
 
 normalized_test_features = normalize_data(test_features)
+
 evaluate_model(normalized_train_data, normalized_test_features, actual_labels)
-
-
-##### TESTING #####
-# for row in train_data:
-#     print(row)
-
-# def print_matrix(matrix):
-#     for row in matrix:
-#         print(row)
-
-# def get_num_of_instance(data):
-#     return len(data)
