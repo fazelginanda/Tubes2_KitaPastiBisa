@@ -12,9 +12,10 @@ def load_data(file_path):
         header = next(csv_reader)
         for row in csv_reader:
             features.append([float(val) if '.' in val else int(val) for val in row[:-1]])
-            labels.append(row[-1])
-    return features, labels, header[:-1]
+            labels.append(int(row[-1]))
+    return features, labels, header
 
+# Separate and collect rows by the price_range target categories (0, 1, 2, 3)
 def separate_by_class(features, labels):
     separated = defaultdict(list)
     for feat, label in zip(features, labels):
@@ -22,18 +23,46 @@ def separate_by_class(features, labels):
     return separated
 
 def summarize_data(data):
-    summaries = {}
+    numerical = {}
+    categorical = {}
+    
     for class_label, instances in data.items():
-        means = [sum(x) / len(x) for x in zip(*instances)]
-        if all(isinstance(val, (int, float)) for val in instances[0]):
-            is_categorical = [len(set(instances[i])) <= 2 for i in range(len(instances))]
-            if is_categorical:
-                probabilities = [sum(x) / len(x) for x in zip(*instances)]
-                summaries[class_label] = {'prob': probabilities, 'is_categorical': True}
-            else:
-                std_devs = [math.sqrt(sum((x - mean)**2 for x in instances[i]) / (len(instances[i])-1)) for i, mean in enumerate(means)]
-                summaries[class_label] = {'mean': means, 'std_dev': std_devs, 'is_categorical': False}
-    return summaries
+        means = []
+        std_devs = []
+        prob_0 = []
+        prob_1 = []
+        rows = len(instances)
+        for j in range(20):
+            if (j in (1, 3, 5, 17, 18, 19)): # Categorical data (non numeric)
+                count_0 = 0
+                count_1 = 0
+                for i in range(rows):
+                    if (instances[i][j] == 0):
+                        count_0 += 1
+                    else:
+                        count_1 += 1
+                prob_0.append((float(count_0) / rows)) # probabilities of 0 in categorical columns
+                prob_1.append((float(count_1) / rows)) # probabilities of 1 in categorical columns
+                    
+            else: # Numerical data
+                sum = 0
+                sum_squared_diff = 0
+                # Calculating mean for numerical data
+                for i in range(rows):
+                    sum += instances[i][j]
+                mean = float(sum) / rows
+                means.append(mean)
+                
+                # Calculating STD for numerical data
+                for i in range(rows):
+                    sum_squared_diff += (instances[i][j] - mean) ** 2
+                mean_squared_diff = float(sum_squared_diff) / rows
+                std_dev = math.sqrt(mean_squared_diff)
+                std_devs.append(std_dev)
+
+        numerical[class_label] = {'mean' : means, 'std_dev' : std_devs}
+        categorical[class_label] = {'prob_0' : prob_0, 'prob_1' : prob_1}
+    return numerical, categorical
 
 # gaussian probability for numerical features
 def calculate_numerical_probability(x, mean, stdev):
@@ -45,25 +74,34 @@ def calculate_categorical_probability(x, prob):
     prob = np.clip(prob, 1e-15, 1 - 1e-15)
     return np.exp(x * np.log(prob) + (1 - x) * np.log(1 - prob))
 
-def calculate_class_probabilities(summaries, input_vector):
+def calculate_class_probabilities(summaries, input):
     probabilities = {}
-    for class_label, class_summaries in summaries.items():
+    
+    for class_label, class_summaries in summaries[0].items():
         probabilities[class_label] = 1
-        for i in range(len(input_vector)):
-            if class_summaries['is_categorical']:
-                prob = class_summaries['prob'][i]
-                x = input_vector[i]
-                probabilities[class_label] *= calculate_categorical_probability(x, prob)
-            else:
-                mean = class_summaries['mean'][i]
-                stdev = class_summaries['std_dev'][i]
-                x = input_vector[i]
+        j = 0
+        for i in range(len(input)):
+            if (i not in (1, 3, 5, 17, 18, 19)):
+                mean = class_summaries['mean'][j]
+                stdev = class_summaries['std_dev'][j]
+                x = input[i]
                 probabilities[class_label] *= calculate_numerical_probability(x, mean, stdev)
+                j += 1
+                
+    for class_label, class_summaries in summaries[1].items():
+        # probabilities[class_label] = 1
+        j = 0
+        for i in range(len(input)):
+            if (i in (1, 3, 5, 17, 18, 19)):
+                prob = class_summaries['prob_1'][j]
+                x = input[i]
+                probabilities[class_label] *= calculate_categorical_probability(x, prob)
+                j += 1
     return probabilities
 
 # predict class for new instance
-def predict(summaries, input_vector):
-    probabilities = calculate_class_probabilities(summaries, input_vector)
+def predict(summaries, input):
+    probabilities = calculate_class_probabilities(summaries, input)
     best_label, best_prob = None, -1
     for class_label, probability in probabilities.items():
         if best_label is None or probability > best_prob:
@@ -72,7 +110,7 @@ def predict(summaries, input_vector):
     return best_label
 
 def train_naive_bayes(train_file_path):
-    # lad training data
+    # load training data
     features, labels, header = load_data(train_file_path)
 
     # separate data by class
@@ -91,11 +129,11 @@ def load_naive_bayes_model(model_file_path):
         summaries, header = pickle.load(model_file)
     return summaries, header
 
-def evaluate_model(model, validation_data, actual_labels):
+def evaluate_model(model, validation_data, target_labels):
     predictions = [predict(model, instance) for instance in validation_data]
 
     # accuracy
-    accuracy = sum(pred == actual for pred, actual in zip(predictions, actual_labels)) / len(predictions)
+    accuracy = sum(pred == target for pred, target in zip(predictions, target_labels)) / len(predictions)
     print("Accuracy:", accuracy)
 
 # load path
@@ -103,7 +141,7 @@ train_file_path = './data/data_train.csv'
 validation_file_path = './data/data_validation.csv'
 
 # load validation data
-validation_features, actual_labels, _ = load_data(validation_file_path)
+validation_features, target_labels, header = load_data(validation_file_path)
 
 # train
 train_naive_bayes(train_file_path)
@@ -112,4 +150,4 @@ train_naive_bayes(train_file_path)
 loaded_model, loaded_header = load_naive_bayes_model('./models/naive_bayes_model.pkl')
 
 # evaluate model
-evaluate_model(loaded_model, validation_features, actual_labels)
+evaluate_model(loaded_model, validation_features, target_labels)
