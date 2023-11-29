@@ -64,15 +64,24 @@ def summarize_data(data):
         categorical[class_label] = {'prob_0' : prob_0, 'prob_1' : prob_1}
     return numerical, categorical
 
+def train_naive_bayes(train_file_path):
+    # load training data
+    features, labels, header = load_data(train_file_path)
+
+    # separate data by class
+    separated_data = separate_by_class(features, labels)
+
+    # summarize data by class
+    summaries = summarize_data(separated_data)
+
+    # save the model
+    with open('./models/naive_bayes_model.pkl', 'wb') as model_file:
+        pickle.dump((summaries, header), model_file)
+
 # gaussian probability for numerical features
 def calculate_numerical_probability(x, mean, stdev):
     exponent = math.exp(-(math.pow(x - mean, 2) / (2 * math.pow(stdev, 2))))
     return (exponent / (math.sqrt(2 * math.pi) * stdev))
-
-# bernoulli for categorical features
-def calculate_categorical_probability(x, prob):
-    prob = np.clip(prob, 1e-15, 1 - 1e-15)
-    return np.exp(x * np.log(prob) + (1 - x) * np.log(1 - prob))
 
 def calculate_class_probabilities(summaries, input):
     probabilities = {}
@@ -95,7 +104,7 @@ def calculate_class_probabilities(summaries, input):
             if (i in (1, 3, 5, 17, 18, 19)):
                 prob = class_summaries['prob_1'][j]
                 x = input[i]
-                probabilities[class_label] *= calculate_categorical_probability(x, prob)
+                probabilities[class_label] *= prob
                 j += 1
     return probabilities
 
@@ -109,19 +118,6 @@ def predict(summaries, input):
             best_label = class_label
     return best_label
 
-def train_naive_bayes(train_file_path):
-    # load training data
-    features, labels, header = load_data(train_file_path)
-
-    # separate data by class
-    separated_data = separate_by_class(features, labels)
-
-    # summarize data by class
-    summaries = summarize_data(separated_data)
-
-    # save the model
-    with open('./models/naive_bayes_model.pkl', 'wb') as model_file:
-        pickle.dump((summaries, header), model_file)
 
 def load_naive_bayes_model(model_file_path):
     # load the model
@@ -138,13 +134,13 @@ def evaluate_model(model, validation_data, target_labels):
 
 # load path
 train_file_path = './data/data_train.csv'
-validation_file_path = './data/data_validation.csv'
+
+# train and save model
+train_naive_bayes(train_file_path)
 
 # load validation data
+validation_file_path = './data/data_validation.csv'
 validation_features, target_labels, header = load_data(validation_file_path)
-
-# train
-train_naive_bayes(train_file_path)
 
 # load model
 loaded_model, loaded_header = load_naive_bayes_model('./models/naive_bayes_model.pkl')
