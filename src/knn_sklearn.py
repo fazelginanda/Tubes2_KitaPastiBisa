@@ -1,6 +1,7 @@
 import csv
 from sklearn.metrics import accuracy_score
 from sklearn.neighbors import KNeighborsClassifier
+import pickle
 
 
 def load_data(file_path):
@@ -22,26 +23,19 @@ validation_file_path = './data/data_validation.csv'
 x_train, y_train, _ = load_data(train_file_path)
 x_validation, y_validation, _ = load_data(validation_file_path)
 
-knn1 = KNeighborsClassifier(n_neighbors=1)
-knn3 = KNeighborsClassifier(n_neighbors=3)
-knn5 = KNeighborsClassifier(n_neighbors=5)
-knn7 = KNeighborsClassifier(n_neighbors=7)
-knn9 = KNeighborsClassifier(n_neighbors=9)
+# Initializing the model:
+knn21 = KNeighborsClassifier(n_neighbors=21)
 
-knn1.fit(x_train, y_train)
-knn3.fit(x_train, y_train)
-knn5.fit(x_train, y_train)
-knn7.fit(x_train, y_train)
-knn9.fit(x_train, y_train)
+# Train the model
+knnmodel = knn21.fit(x_train, y_train)
+with open('./models/knn_sklearn_model.pkl', 'wb') as model_file:
+    pickle.dump((knnmodel), model_file)
 
-y_pred_1 = knn1.predict(x_validation)
-y_pred_3 = knn3.predict(x_validation)
-y_pred_5 = knn5.predict(x_validation)
-y_pred_7 = knn7.predict(x_validation)
-y_pred_9 = knn9.predict(x_validation)
+# Making predictions by using pred() function
+with open('./models/knn_sklearn_model.pkl', 'rb') as model_file:
+    loaded_model = pickle.load(model_file)
 
-print("Accuracy with k=1", accuracy_score(y_validation, y_pred_1)*100)
-print("Accuracy with k=3", accuracy_score(y_validation, y_pred_3)*100)
-print("Accuracy with k=5", accuracy_score(y_validation, y_pred_5)*100)
-print("Accuracy with k=7", accuracy_score(y_validation, y_pred_7)*100)
-print("Accuracy with k=9", accuracy_score(y_validation, y_pred_9)*100)
+y_pred_21 = loaded_model.predict(x_validation)
+
+print("Accuracy of KNN with k=21 is",
+      accuracy_score(y_validation, y_pred_21)*100)
