@@ -56,5 +56,6 @@ with open('../models/knn_model.pkl', 'rb') as model_file:
 predictions = loaded_model.predict(X_test)
 accuracy = calculate_accuracy(Y_test, predictions)
 
-print("Predictions:", predictions)
+print("Predictions:")
+print(predictions)
 print(f"Accuracy: {accuracy*100}%")

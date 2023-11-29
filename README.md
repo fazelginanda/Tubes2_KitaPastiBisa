@@ -8,10 +8,11 @@ Masing-masing algoritma melatih sebuah model menggunakan data latih (data_train.
 Model kemudian digunakan untuk mengetes prediksi untuk data uji (data_validation.csv).
 
 ## Cara Menjalankan Program
-1. Jalankan algoritma KNN hasil implementasi manual: `python knn.py`
-2. Jalankan algoritma KNN hasil implementasi pustaka scikit-learn: `python knn_sklearn.py`
-3. Jalankan algoritma Naive Bayes hasil implementasi manual: `python naive_bayes.py`
-4. Jalankan algoritma Naive Bayes hasil implementasi pustaka scikit-learn: `python naive_bayes_sklearn.py`
+1. Masuk ke direktori src
+2. Jalankan algoritma KNN hasil implementasi manual: `python knn.py`
+3. Jalankan algoritma KNN hasil implementasi pustaka scikit-learn: `python knn_sklearn.py`
+4. Jalankan algoritma Naive Bayes hasil implementasi manual: `python naive_bayes.py`
+5. Jalankan algoritma Naive Bayes hasil implementasi pustaka scikit-learn: `python naive_bayes_sklearn.py`
 
 ## Identitas Kelompok
 ### Nama Kelompok : KitaPastiBisa
