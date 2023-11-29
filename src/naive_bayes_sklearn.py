@@ -17,8 +17,8 @@ def load_data(file_path):
             labels.append(row[-1])
     return features, labels, header[:-1]
 
-train_file_path = './data/data_train.csv'
-validation_file_path = './data/data_validation.csv'
+train_file_path = '../data/data_train.csv'
+validation_file_path = '../data/data_validation.csv'
 
 x_train, y_train, _ = load_data(train_file_path)
 x_validation, y_validation, _ = load_data(validation_file_path)
@@ -28,15 +28,16 @@ NBclassifier = GaussianNB()
 
 # Train the model:
 NBmodel = NBclassifier.fit(x_train, y_train)
-with open('./models/naive_bayes_sklearn_model.pkl', 'wb') as model_file:
+with open('../models/naive_bayes_sklearn_model.pkl', 'wb') as model_file:
         pickle.dump((NBmodel), model_file)
 
 # Making predictions by using pred() function:
-with open('./models/naive_bayes_sklearn_model.pkl', 'rb') as model_file:
+with open('../models/naive_bayes_sklearn_model.pkl', 'rb') as model_file:
         loaded_model = pickle.load(model_file)
 
 NBpreds = loaded_model.predict(x_validation)
-# print("The predictions are:\n", NBpreds)
+print("Predictions:")
+print(NBpreds)
 
-# Finding accuracy of our Naive Bayes classifier:
-print("Accuracy of our classifier is:", accuracy_score(y_validation, NBpreds) *100)
+# Finding accuracy
+print(f"Accuracy: {accuracy_score(y_validation, NBpreds) *100}%")

@@ -75,7 +75,7 @@ def train_naive_bayes(train_file_path):
     summaries = summarize_data(separated_data)
 
     # save the model
-    with open('./models/naive_bayes_model.pkl', 'wb') as model_file:
+    with open('../models/naive_bayes_model.pkl', 'wb') as model_file:
         pickle.dump((summaries, header), model_file)
 
 # gaussian probability for numerical features
@@ -127,23 +127,25 @@ def load_naive_bayes_model(model_file_path):
 
 def evaluate_model(model, validation_data, target_labels):
     predictions = [predict(model, instance) for instance in validation_data]
+    print("Predictions:")
+    print(predictions)
 
     # accuracy
     accuracy = sum(pred == target for pred, target in zip(predictions, target_labels)) / len(predictions)
-    print("Accuracy:", accuracy)
+    print(f"Accuracy: {accuracy*100}%")
 
 # load path
-train_file_path = './data/data_train.csv'
+train_file_path = '../data/data_train.csv'
 
 # train and save model
 train_naive_bayes(train_file_path)
 
 # load validation data
-validation_file_path = './data/data_validation.csv'
+validation_file_path = '../data/data_validation.csv'
 validation_features, target_labels, header = load_data(validation_file_path)
 
 # load model
-loaded_model, loaded_header = load_naive_bayes_model('./models/naive_bayes_model.pkl')
+loaded_model, loaded_header = load_naive_bayes_model('../models/naive_bayes_model.pkl')
 
 # evaluate model
 evaluate_model(loaded_model, validation_features, target_labels)
